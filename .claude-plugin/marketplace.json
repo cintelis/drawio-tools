@@ -1,0 +1,14 @@
+{
+  "name": "drawio-tools",
+  "description": "draw.io diagram tooling for Claude Code: editable .drawio.svg generation, checking and markdown documents.",
+  "owner": {
+    "name": "Nick Forshteyn"
+  },
+  "plugins": [
+    {
+      "name": "drawio-tools",
+      "source": "./",
+      "description": "draw.io diagrams as editable .drawio.svg for Claude Code: MCP server, skill and check-on-write hook."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "description": "Check any .drawio or .drawio.svg Claude writes; problems go back to Claude to fix.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run --quiet --directory \"${CLAUDE_PLUGIN_ROOT}\" drawgen hook",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

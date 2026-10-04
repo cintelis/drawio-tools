@@ -1,0 +1,33 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: uv run pytest -q
+      # The examples double as a regression test for the checker: errors fail the build.
+      - run: uv run python examples/clearline/build.py --renderer builtin
+      - run: uv run python examples/bluefield/build.py --renderer builtin --check
+
+  exact-render:
+    # draw.io Desktop under xvfb: proves the exact export path and the pinned download.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: sudo apt-get update && sudo apt-get install -y xvfb libgbm1 libasound2t64
+      - run: uv sync --locked
+      - run: uv run drawgen install-drawio
+      - run: uv run drawgen drawio-status
+      - run: uv run python examples/clearline/build.py --renderer drawio
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clearline-diagrams
+          path: examples/clearline/out/

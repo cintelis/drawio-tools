@@ -1,0 +1,15 @@
+{
+  "name": "drawio-tools",
+  "version": "0.1.0",
+  "description": "Generate, check and export draw.io diagrams as editable .drawio.svg, alone or in markdown that renders on GitHub. MCP server, skill and a check-on-write hook.",
+  "author": {
+    "name": "Nick Forshteyn"
+  },
+  "keywords": [
+    "drawio",
+    "diagrams",
+    "mcp",
+    "svg",
+    "markdown"
+  ]
+}

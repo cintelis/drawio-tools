@@ -1,0 +1,30 @@
+[project]
+name = "drawgen"
+version = "0.1.0"
+description = "Generate, check and export draw.io diagrams as editable .drawio.svg, for Claude Desktop and Claude Code (MCP)"
+readme = "README.md"
+authors = [
+    { name = "Nick Forshteyn", email = "nick@cintelis.ai" }
+]
+requires-python = ">=3.12"
+keywords = ["drawio", "diagrams", "mcp", "claude", "svg", "markdown"]
+dependencies = [
+    "mcp>=2.3",
+    "pyyaml>=6.0.3",
+]
+
+[project.scripts]
+drawgen = "drawgen.cli:main"
+drawgen-mcp = "drawgen.mcp_server:main"
+
+[build-system]
+requires = ["uv_build>=0.11.2,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
