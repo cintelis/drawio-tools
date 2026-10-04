@@ -31,6 +31,28 @@ list its diagrams), edit the XML, `update_diagram`. For a diagram you made from 
 regenerating from the edited spec is cleaner; use `add_diagram_to_markdown` with
 `replace_link` to swap the figure in its document.
 
+## Into a GuardStein note
+
+When the guardstein MCP server is connected (`guardstein_*` tools) and the user wants
+the diagram in a note:
+
+1. Write it locally with `create_diagram`, `output_path: <name>.drawio.svg`, and fix the
+   check report as above.
+2. `guardstein_add_diagram` with that path and an `alt` caption:
+   - existing note: `note_id` (from `guardstein_list_notes`), plus `after_heading` to
+     place it under a section;
+   - edited diagram: `replace_link` with the `assets/...` link already in the note
+     (`guardstein_read_note` shows it);
+   - otherwise it creates a new note (`title`, `folder`).
+It reads the note, inserts the link and writes it back with the version it read, so a
+concurrent edit is never overwritten. Don't paste the link in with
+`guardstein_update_note` yourself unless you are also changing text.
+
+To edit a diagram that is already in a note: `guardstein_read_asset` returns the SVG
+text; the draw.io XML is the root `content` attribute. Save it as a local .drawio, edit
+or rebuild, write a new .drawio.svg, then `guardstein_add_diagram` with `replace_link`.
+Vault workspaces refuse API writes by design; say so rather than retrying.
+
 ## Spec rules
 
 - Pick a `kind` for every component; colour comes from the theme and means type only.
