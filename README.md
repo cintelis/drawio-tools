@@ -41,7 +41,7 @@ name and nobody sees a stale cached picture.
 Needs [uv](https://docs.astral.sh/uv/) and Python 3.12+.
 
 ```bash
-git clone <this repo> C:\code\drawio-tools
+git clone https://github.com/cintelis/drawio-tools C:\code\drawio-tools
 cd C:\code\drawio-tools
 uv sync
 uv run drawgen install-drawio   # optional: exact rendering + previews (~173 MB, see below)
@@ -73,9 +73,12 @@ the skill: zip `skills/drawio` and upload it under Settings → Capabilities →
 As a plugin (MCP server, skill and check-on-write hook together):
 
 ```bash
-claude plugin marketplace add C:\code\drawio-tools
+claude plugin marketplace add cintelis/drawio-tools      # or a local path: C:\code\drawio-tools
 claude plugin install drawio-tools@drawio-tools
 ```
+
+The repository is private, so installing from GitHub needs your git credentials to
+reach it (the same ones `git clone` uses).
 
 Or just the server: `claude mcp add drawgen -- uv run --quiet --directory C:\code\drawio-tools drawgen-mcp`.
 In Claude Code relative paths resolve against the project directory.
