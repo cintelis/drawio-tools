@@ -135,8 +135,10 @@ def containers():
         d.edge(c, "gw", "", entry="left")
     d.edge("gw", "api", "HTTPS", exit="right", entry="left")
     d.edge("gw", "auth", "Verify", "weak", exit="bottom", entry="top")
-    d.edge("mcp", "api", "Internal REST", exit="left", entry="right")
-    d.edge("api", "cls", "", exit="right", entry="top", points=[(975, 230)])
+    d.edge("mcp", "api", "REST", exit="left", entry="right")  # the 40px gap fits one short word
+    # Out of the lower right, down the gap between the rows and into the top of
+    # Classification: the straight route ran through the MCP server box.
+    d.edge("api", "cls", "", exit=(1, 0.75), entry="top", points=[(840, 210), (840, 247), (975, 247)])
     d.edge("api", "lc", "", exit="bottom", entry="top")
     d.edge("cls", "llmgw", "Prompts", "ai", exit="right", entry="left")
     d.edge("llmgw", "anth", "", "ai", exit="right", entry="left")
