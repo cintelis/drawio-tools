@@ -17,6 +17,7 @@ from mcp.server.mcpserver import Image, MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
+from . import __version__
 from . import install as installer
 from .check import check_file, check_xml
 from .diagram import DiagramError
@@ -43,7 +44,7 @@ To change an existing diagram, read_diagram returns its XML; edit it and call up
 install_drawio downloads about 150-180 MB: ask the user before calling it.
 """
 
-server = MCPServer(name="drawgen", instructions=INSTRUCTIONS, version="0.1.0")
+server = MCPServer(name="drawgen", instructions=INSTRUCTIONS, version=__version__)
 
 _RW = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=True, open_world_hint=False)
 _RO = ToolAnnotations(read_only_hint=True, open_world_hint=False)
