@@ -1,6 +1,6 @@
 [project]
 name = "drawgen"
-version = "0.1.0"
+version = "0.2.0"
 description = "Generate, check and export draw.io diagrams as editable .drawio.svg, for Claude Desktop and Claude Code (MCP)"
 readme = "README.md"
 authors = [

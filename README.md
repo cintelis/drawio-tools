@@ -38,50 +38,101 @@ name and nobody sees a stale cached picture.
 
 ## Install
 
-Needs [uv](https://docs.astral.sh/uv/) and Python 3.12+.
+Releases are on the [releases page](https://github.com/cintelis/drawio-tools/releases).
+The repository is private, so every route needs a GitHub account with access to it.
+Exact rendering and previews also need draw.io Desktop: the `install_drawio` tool fetches
+it (about 170 MB, it asks first), or see [Shipping draw.io](#shipping-drawio).
+
+### Claude Code: the plugin
+
+The plugin brings the MCP server, the skill and the check-on-write hook together. It
+needs [uv](https://docs.astral.sh/uv/) on your PATH.
 
 ```bash
-git clone https://github.com/cintelis/drawio-tools C:\code\drawio-tools
-cd C:\code\drawio-tools
-uv sync
-uv run drawgen install-drawio   # optional: exact rendering + previews (~173 MB, see below)
-uv run pytest -q
+claude plugin marketplace add cintelis/drawio-tools
+claude plugin install drawio-tools@drawio-tools
 ```
 
-### Claude Desktop
+Claude Code clones the repository with your own git credentials and never prompts. If
+`gh auth login` works for you, run `gh auth setup-git` once so git can use it. Without a
+GitHub SSH key, also set `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1`.
 
-Settings → Developer → Edit Config, add to `claude_desktop_config.json`, restart Claude:
+**Updates:** run `claude plugin update drawio-tools@drawio-tools`, or turn on auto-update
+under **Marketplaces** in `/plugin`.
+
+**For everyone in a repository**, commit this as `.claude/settings.json` (or merge it
+into the one you have). Teammates who trust the folder get the plugin with no commands:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "drawio-tools": {
+      "source": { "source": "github", "repo": "cintelis/drawio-tools" }
+    }
+  },
+  "enabledPlugins": {
+    "drawio-tools@drawio-tools": true
+  }
+}
+```
+
+**For a whole organisation**, an admin puts the same keys in managed settings (Team and
+Enterprise: claude.ai **Organization settings > Claude Code > Managed settings**) and
+adds `"autoUpdate": true` beside `source`, so new releases arrive without anyone
+updating.
+
+Just the MCP server, without the skill or hook:
+`claude mcp add drawgen -- uvx --from git+https://github.com/cintelis/drawio-tools@v0.2.0 drawgen-mcp`.
+In Claude Code, relative paths resolve against the project directory.
+
+### Claude Desktop: the extension
+
+1. From the latest release, download `drawgen-X.Y.Z.mcpb` and `drawio-skill.zip`.
+2. Double-click the `.mcpb` (or drag it onto Settings → Extensions) and choose where
+   diagrams go. Claude Desktop installs Python and the dependencies itself.
+3. Upload `drawio-skill.zip` under Settings → Capabilities → Skills. On Team and
+   Enterprise plans, an admin can add the skill for everyone instead.
+
+To update, install the new release's `.mcpb` over the old one.
+
+**Without the extension**, add the server to `claude_desktop_config.json` (Settings →
+Developer → Edit Config) and restart Claude. Use the full path to `uvx`, because Desktop
+does not inherit your shell's PATH. `DRAWGEN_WORKDIR` is where relative paths land:
 
 ```json
 {
   "mcpServers": {
     "drawgen": {
-      "command": "C:\\Users\\YOU\\.local\\bin\\uv.exe",
-      "args": ["run", "--quiet", "--directory", "C:\\code\\drawio-tools", "drawgen-mcp"],
-      "env": { "DRAWGEN_WORKDIR": "C:\\Users\\YOU\\Documents\\Diagrams" }
+      "command": "C:\Users\YOU\.local\bin\uvx.exe",
+      "args": ["--from", "git+https://github.com/cintelis/drawio-tools@v0.2.0", "drawgen-mcp"],
+      "env": { "DRAWGEN_WORKDIR": "C:\Users\YOU\Documents\Diagrams" }
     }
   }
 }
 ```
 
-Use the full path to `uv` (Desktop does not inherit your shell's PATH). `DRAWGEN_WORKDIR`
-is where relative paths land; Desktop starts servers in an arbitrary directory. Then add
-the skill: zip `skills/drawio` and upload it under Settings → Capabilities → Skills.
+### CI and servers: the Docker image
 
-### Claude Code
-
-As a plugin (MCP server, skill and check-on-write hook together):
+Each release publishes `ghcr.io/cintelis/drawgen:X.Y.Z` (plus `X.Y` and `latest`), with
+draw.io Desktop and a virtual display included, so rendering is exact:
 
 ```bash
-claude plugin marketplace add cintelis/drawio-tools      # or a local path: C:\code\drawio-tools
-claude plugin install drawio-tools@drawio-tools
+docker run --rm -v "$PWD:/work" -w /work ghcr.io/cintelis/drawgen:0.2.0 drawgen check docs/*.md
 ```
 
-The repository is private, so installing from GitHub needs your git credentials to
-reach it (the same ones `git clone` uses).
+The image is private like the repository: `docker login ghcr.io` first, using a token
+with `read:packages`.
 
-Or just the server: `claude mcp add drawgen -- uv run --quiet --directory C:\code\drawio-tools drawgen-mcp`.
-In Claude Code relative paths resolve against the project directory.
+### Development
+
+```bash
+git clone https://github.com/cintelis/drawio-tools C:\code\drawio-tools
+cd C:\code\drawio-tools
+uv sync
+uv run drawgen install-drawio   # optional: exact rendering + previews
+uv run pytest -q
+claude --plugin-dir .           # try the plugin from your checkout
+```
 
 ## MCP tools
 
@@ -123,8 +174,8 @@ PATH and the usual install locations. To bump: take the asset names and digests 
 `gh api repos/jgraph/drawio-desktop/releases/tags/v<version>` into `ASSETS`.
 
 For CI and servers, the `Dockerfile` bakes draw.io and xvfb into an image whose default
-command is the MCP server. The CI workflow has an `exact-render` job doing the same on a
-plain runner.
+command is the MCP server; each release publishes it to GHCR. The CI workflow has an
+`exact-render` job doing the same on a plain runner.
 
 ## The checker's limits
 
@@ -134,6 +185,21 @@ way draw.io's router chooses sides; and there are no font metrics, so `label-ove
 estimates width from character counts, calibrated against draw.io 31 renders of
 Helvetica. Both lean towards reporting. A checker cannot judge whether a diagram tells
 its story clearly: that is what `preview_diagram` is for.
+
+## Releasing
+
+1. Set the new version in `pyproject.toml`, `src/drawgen/__init__.py` and
+   `.claude-plugin/plugin.json`, then run `uv lock`. `tests/test_release.py` fails if
+   they disagree. Claude Code only updates the plugin when `plugin.json` changes, so
+   pushed commits without a version bump never reach users.
+2. Add a `## X.Y.Z` section to `CHANGELOG.md`. It becomes the release notes.
+3. Update the `@vX.Y.Z` pins in this README, merge to `main`, then tag and push:
+   `git tag vX.Y.Z && git push origin vX.Y.Z`.
+
+The release workflow checks that the tag matches `pyproject.toml` and runs the tests.
+It then publishes the GitHub release (`.mcpb`, skill zip, wheel, sdist) and the GHCR
+image. To build the Desktop assets locally, run `uv run python mcpb/build.py` (needs
+Node). They land in `dist/`.
 
 ## Layout
 
@@ -150,6 +216,7 @@ src/drawgen/
   cli.py          drawgen
   mcp_server.py   drawgen-mcp
 skills/drawio/SKILL.md
+mcpb/             Claude Desktop extension: manifest template, launcher, build.py
 .claude-plugin/, .mcp.json, hooks/hooks.json     Claude Code plugin
 examples/clearline/   themed API, 9 diagrams
 examples/bluefield/   raw API with its own palette, 8 pages in one file

@@ -10,4 +10,4 @@ __all__ = [
     "Issue", "Report", "render", "render_all", "find_drawio", "ExportError",
     "write_document", "add_diagram", "diagrams_in",
 ]
-__version__ = "0.1.0"
+__version__ = "0.2.0"

@@ -15,6 +15,11 @@ jobs:
       # The examples double as a regression test for the checker: errors fail the build.
       - run: uv run python examples/clearline/build.py --renderer builtin
       - run: uv run python examples/bluefield/build.py --renderer builtin --check
+      # The Desktop extension packs and validates, so a release never finds out first.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: uv run python mcpb/build.py
 
   exact-render:
     # draw.io Desktop under xvfb: proves the exact export path and the pinned download.

@@ -1,0 +1,44 @@
+{
+  "manifest_version": "0.4",
+  "name": "drawgen",
+  "display_name": "drawgen: draw.io diagrams",
+  "version": "filled in by mcpb/build.py",
+  "description": "Generate, check and export draw.io diagrams as editable .drawio.svg files, alone or inside markdown documents.",
+  "long_description": "Claude writes a short spec (components, zones, labelled edges); drawgen builds the draw.io diagram, checks it for overlaps, broken edges and labels that will not fit, and writes NAME.drawio.svg: an SVG GitHub shows as a picture, with the diagram embedded so draw.io, its VS Code extension and GuardStein open it for editing. Exact rendering and previews need draw.io Desktop, which the install_drawio tool can fetch (about 170 MB, it asks first); without it a built-in renderer is used.",
+  "author": {
+    "name": "Nick Forshteyn"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cintelis/drawio-tools"
+  },
+  "homepage": "https://github.com/cintelis/drawio-tools",
+  "keywords": ["drawio", "diagrams", "svg", "markdown", "architecture"],
+  "server": {
+    "type": "uv",
+    "entry_point": "server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": ["run", "--quiet", "--frozen", "--no-dev", "--directory", "${__dirname}", "server.py"],
+      "env": {
+        "DRAWGEN_WORKDIR": "${user_config.workdir}"
+      }
+    }
+  },
+  "user_config": {
+    "workdir": {
+      "type": "directory",
+      "title": "Diagrams folder",
+      "description": "Where relative paths such as docs/flow.drawio.svg are written.",
+      "default": "${DOCUMENTS}/Diagrams",
+      "required": false
+    }
+  },
+  "tools": "filled in by mcpb/build.py",
+  "compatibility": {
+    "platforms": ["darwin", "linux", "win32"],
+    "runtimes": {
+      "python": ">=3.12"
+    }
+  }
+}
